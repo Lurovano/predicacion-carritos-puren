@@ -110,6 +110,9 @@
     </div>
 
     <script>
+        // CONFIGURACIÓN DE CONTACTO (¡Cambia este número por el tuyo!)
+        const CONFIG_TELEFONO_ENCARGADO = "56912345678"; // <--- Pon tu número con código de país, sin el "+" ni espacios.
+
         const turnos = [
             { id: 1, dia: "Lunes", fecha: "16 Mar", pueblo: "Purén", lugar: "Plaza Purén", hora: "08:00 - 10:00 AM", publicadores: [] },
             { id: 2, dia: "Lunes", fecha: "16 Mar", pueblo: "Purén", lugar: "Plaza Purén", hora: "13:00 - 15:00 PM", publicadores: ["Lucia Salgado", "Fabiola de Morales"] },
@@ -148,9 +151,16 @@
         const elRowPuntos = document.getElementById('row-puntos-especificos');
         const elContainerChipsEspecificos = document.getElementById('container-chips-especificos');
 
-        document.getElementById('count-total').innerText = turnos.length;
-        document.getElementById('count-asignados').innerText = turnos.filter(t => t.publicadores.length > 0).length;
-        document.getElementById('count-libres').innerText = turnos.filter(t => t.publicadores.length === 0).length;
+        function actualizarContadores() {
+            document.getElementById('count-total').innerText = turnos.length;
+            document.getElementById('count-asignados').innerText = turnos.filter(t => t.publicadores.length > 0).length;
+            document.getElementById('count-libres').innerText = turnos.filter(t => t.publicadores.length === 0).length;
+        }
+
+        function generarEnlaceWhatsApp(t) {
+            const texto = `Hola, me gustaría inscribirme en el turno libre de Predicación Pública:\n\n📍 *Lugar:* ${t.lugar} (${t.pueblo})\n📅 *Día:* ${t.dia} ${t.fecha}\n⏰ *Hora:* ${t.hora}\n\nMi nombre es: `;
+            return `https://api.whatsapp.com/send?phone=${CONFIG_TELEFONO_ENCARGADO}&text=${encodeURIComponent(texto)}`;
+        }
 
         function renderTurnos() {
             elListaTurnos.innerHTML = '';
@@ -168,7 +178,25 @@
             filtrados.forEach(t => {
                 const esVacio = t.publicadores.length === 0;
                 const estilo = estilosCromaticos[t.pueblo];
-                const bgFondo = esVacio ? 'bg-rose-50/30 ring-1 ring-rose-200/50' : 'bg-white';
+                const bgFondo = esVacio ? 'bg-rose-50/20 ring-1 ring-rose-100' : 'bg-white';
+
+                let botonAccion = '';
+                if (esVacio) {
+                    botonAccion = `
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
+                            <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">🔴 Disponible</span>
+                            <a href="${generarEnlaceWhatsApp(t)}" target="_blank" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all target-link">
+                                <span>Agendar Turno</span> ➡️
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    botonAccion = `
+                        <div class="mt-3 pt-2 border-t border-slate-100 flex items-center">
+                            <span class="text-xs font-medium text-slate-500">Asignación: <span class="text-xs font-medium text-slate-800 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">👥 ${t.publicadores.join(" y ")}</span></span>
+                        </div>
+                    `;
+                }
 
                 elListaTurnos.innerHTML += `
                     <div class="${bgFondo} rounded-xl border-l-4 ${estilo.border} border-y border-r border-slate-200 p-4 shadow-sm">
@@ -182,9 +210,7 @@
                                 <p class="text-[11px] text-slate-500 mt-1 font-medium">${t.hora}</p>
                             </div>
                         </div>
-                        <div class="mt-3 pt-2 border-t border-slate-100 flex items-center">
-                            <span class="text-xs font-medium text-slate-500">Asignación: ${esVacio ? '<span class="text-xs font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">🔴 Disponible / Sin asignar</span>' : '<span class="text-xs font-medium text-slate-800 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">👥 ' + t.publicadores.join(" y ") + '</span>'}</span>
-                        </div>
+                        ${botonAccion}
                     </div>
                 `;
             });
@@ -202,17 +228,22 @@
                     const turnosDelLugar = turnos.filter(t => t.lugar === lugar);
                     if (turnosDelLugar.length === 0) return;
 
-                    const estilo = styles = estilosCromaticos[pueblo];
+                    const estilo = estilosCromaticos[pueblo];
                     let filasHTML = '';
 
                     turnosDelLugar.forEach(t => {
                         const esVacio = t.publicadores.length === 0;
-                        const bgFila = esVacio ? 'bg-rose-50/20' : 'bg-white';
+                        const bgFila = esVacio ? 'bg-rose-50/10' : 'bg-white';
+                        
+                        let accionFila = esVacio 
+                            ? `<a href="${generarEnlaceWhatsApp(t)}" target="_blank" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-1 rounded">Reservar</a>` 
+                            : `<span class="text-slate-700 font-medium">👥 ${t.publicadores.join(" y ")}</span>`;
+
                         filasHTML += `
                             <div class="p-3 flex justify-between items-center text-xs ${bgFila}">
                                 <div class="space-y-0.5">
                                     <span class="font-semibold text-slate-800">${t.dia} — <span class="text-slate-500 font-normal">${t.hora}</span></span>
-                                    <p class="text-slate-500 mt-0.5">${esVacio ? '<span class="text-rose-600 font-bold">🔴 Disponible</span>' : '<span class="text-slate-700 font-medium">👥 ' + t.publicadores.join(" y ") + '</span>'}</p>
+                                    <p class="text-slate-500 mt-0.5">${accionFila}</p>
                                 </div>
                                 <span class="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded border border-slate-200">${t.fecha}</span>
                             </div>
@@ -226,7 +257,7 @@
                                     <h3 class="font-bold text-xs tracking-wide uppercase">${lugar}</h3>
                                     <p class="text-[9px] opacity-75 font-medium tracking-wider uppercase mt-0.5">${pueblo}</p>
                                 </div>
-                                <span class="text-[11px] bg-white/10 border border-white/20 px-2 py-0.5 rounded font-medium">${turnosDelLugar.length} turnos</span>
+                                <span class="text-[11px] bg-white/10 border border-white/20 px-2 py-0.5 rounded font-medium">${turnosDelLugar.length} slots</span>
                             </div>
                             <div class="divide-y divide-slate-100">${filasHTML}</div>
                         </div>
@@ -372,6 +403,7 @@
             });
         });
 
+        actualizarContadores();
         renderTurnos();
         renderLugaresAgrupados();
         elListaMisTurnos.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-medium bg-white rounded-xl border border-slate-100 shadow-sm">Ingresa tu nombre o apellido arriba para ubicar tus turnos.</div>';
