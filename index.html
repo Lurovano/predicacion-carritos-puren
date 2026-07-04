@@ -78,7 +78,7 @@
             { dia: "Jueves", pueblo: "Purén", lugar: "Hospital Purén", hora: "4:00 pm - 6:00 pm" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "8:00 am - 10:00 am" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:00 pm - 2:00 pm" },
-            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", font: "4:00 pm - 6:00 pm", hora: "4:00 pm - 6:00 pm" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
@@ -106,7 +106,7 @@
             { dia: "Sábado", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "2:30 pm - 4:30 pm" },
             { dia: "Sábado", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:30 pm - 6:30 pm" },
             { dia: "Sábado", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:30 pm - 2:30 pm" },
-            { dia: "Sábado", pueblo: "Los Sauces", text: "2:30 pm - 4:30 pm", lugar: "Terminal Los Sauces", hora: "2:30 pm - 4:30 pm" },
+            { dia: "Sábado", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "2:30 pm - 4:30 pm" },
             { dia: "Sábado", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:30 pm - 6:30 pm" }
         ];
 
@@ -122,7 +122,7 @@
             "Los Sauces": ["Consultorio Los Sauces", "Feria Los Sauces", "Terminal Los Sauces"]
         };
 
-        // Lógica de cálculo de fecha dinámica con regla de corte el Sábado
+        // Lógica matemática limpia para fechas automáticas con corte el sábado
         function obtenerFechaDeDia(nombreDia) {
             const indicesDias = { "Lunes": 1, "Martes": 2, "Miércoles": 3, "Jueves": 4, "Viernes": 5, "Sábado": 6 };
             const objetivo = indicesDias[nombreDia];
@@ -133,7 +133,7 @@
             
             let diasDeDiferencia = objetivo - diaActualSemana;
 
-            // Si hoy es Sábado (6) o Domingo (0), saltamos automáticamente a la siguiente semana
+            // Corte dinámico: Si hoy es Sábado (6) o Domingo (0), proyecta hacia la semana entrante
             if (diaActualSemana === 6 || diaActualSemana === 0) {
                 if (diaActualSemana === 6) {
                     diasDeDiferencia = objetivo + (7 - diaActualSemana);
@@ -507,7 +507,7 @@
 
                     </main>
 
-                    {/* NAVEGACIÓN INFERIOR COPIADA EXACTA */}
+                    {/* NAVEGACIÓN INFERIOR */}
                     <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 h-16 flex justify-around items-center z-50 px-2 shadow-2xl">
                         <button 
                             onClick={() => setActiveTab("turnos")}
@@ -527,4 +527,19 @@
 
                         <button 
                             onClick={() => setActiveTab("lugares")}
-                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "lugares" ? 'text-slate-900 font-bold' : '
+                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "lugares" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <span class="text-[10px]">Lugares</span>
+                        </button>
+                    </nav>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
