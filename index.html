@@ -78,7 +78,7 @@
             { dia: "Jueves", pueblo: "Purén", lugar: "Hospital Purén", hora: "4:00 pm - 6:00 pm" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "8:00 am - 10:00 am" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:00 pm - 2:00 pm" },
-            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", font: "4:00 pm - 6:00 pm", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
             { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
@@ -122,28 +122,20 @@
             "Los Sauces": ["Consultorio Los Sauces", "Feria Los Sauces", "Terminal Los Sauces"]
         };
 
-        // Lógica matemática limpia para fechas automáticas con corte el sábado
+        // Generador de fechas en base al lunes de la semana actual
         function obtenerFechaDeDia(nombreDia) {
             const indicesDias = { "Lunes": 1, "Martes": 2, "Miércoles": 3, "Jueves": 4, "Viernes": 5, "Sábado": 6 };
             const objetivo = indicesDias[nombreDia];
             if (!objetivo) return "";
 
             const hoy = new Date();
-            const diaActualSemana = hoy.getDay(); // 0 = Domingo, 1 = Lunes ..., 6 = Sábado
+            const diaActualSemana = hoy.getDay(); // 0=Dom, 1=Lun ... 6=Sab
             
-            let diasDeDiferencia = objetivo - diaActualSemana;
-
-            // Corte dinámico: Si hoy es Sábado (6) o Domingo (0), proyecta hacia la semana entrante
-            if (diaActualSemana === 6 || diaActualSemana === 0) {
-                if (diaActualSemana === 6) {
-                    diasDeDiferencia = objetivo + (7 - diaActualSemana);
-                } else {
-                    diasDeDiferencia = objetivo;
-                }
-            }
-
+            // Calculamos los días de diferencia relativos al lunes de esta semana actual
+            const distanciaAlLunes = diaActualSemana === 0 ? -6 : 1 - diaActualSemana;
+            
             const fechaResultado = new Date(hoy);
-            fechaResultado.setDate(hoy.getDate() + diasDeDiferencia);
+            fechaResultado.setDate(hoy.getDate() + distanciaAlLunes + (objetivo - 1));
 
             return `${nombreDia} ${fechaResultado.getDate()}`;
         }
@@ -152,7 +144,7 @@
             const [activeTab, setActiveTab] = React.useState("turnos");
             const [turnos, setTurnos] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
-            const [verSoloVacios, setVerSoloVacios] = React.useState(true);
+            const [verSoloVacios, setVerSoloVacios] = React.useState(false); // Cambiado a false por defecto para ver todo desde el inicio
             const [filtroDia, setFiltroDia] = React.useState("Todos");
             const [busquedaNombre, setBusquedaNombre] = React.useState("");
             const [filtroPuebloLugares, setFiltroPuebloLugares] = React.useState("Todos");
@@ -161,15 +153,20 @@
             React.useEffect(() => {
                 async function fetchTurnos() {
                     try {
-                        const response = await fetch(SCRIPT_URL);
-                        const respuestasForm = await response.json();
+                        let respuestasForm = [];
+                        try {
+                            const response = await fetch(SCRIPT_URL);
+                            respuestasForm = await response.json();
+                        } catch (e) {
+                            console.log("Planilla vacía o sin datos iniciales. Desplegando turnos base.");
+                        }
                         
                         const turnosCombinados = estructuraTurnosBase.map((base, index) => {
-                            const match = respuestasForm.find(r => 
+                            const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => 
                                 r.dia === base.dia && 
                                 r.turno.includes(base.lugar) && 
                                 r.turno.includes(base.hora)
-                            );
+                            ) : null;
                             
                             let publicadoresArray = [];
                             if (match) {
@@ -203,7 +200,7 @@
                 return (
                     <div class="max-w-md mx-auto bg-gray-50 min-h-screen flex flex-col justify-center items-center">
                         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-3"></div>
-                        <p class="text-sm font-medium text-gray-500">Cargando fechas automáticas...</p>
+                        <p class="text-sm font-medium text-gray-500">Cargando turnos semanales...</p>
                     </div>
                 );
             }
@@ -220,7 +217,7 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <h1 class="text-xl font-bold tracking-tight">Predicación Pública</h1>
-                                <p class="text-xs text-slate-400">Horarios Automáticos de la Semana</p>
+                                <p class="text-xs text-slate-400">Horarios de la Semana</p>
                             </div>
                             <span class="bg-emerald-500 text-slate-950 font-bold text-xs px-2.5 py-1 rounded-full shadow">
                                 Activo
