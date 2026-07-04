@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Panel de Predicación Pública</title>
+    <title>Turnos Predicación Pública</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -249,7 +249,7 @@
                                 </div>
 
                                 <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl shadow-sm border border-gray-100">
-                                    <span class="text-sm font-medium text-gray-700">Mostrar solo huecos libres</span>
+                                    <span class="text-sm font-medium text-gray-700">Mostrar solo turnos disponibles</span>
                                     <button 
                                         onClick={() => setVerSoloVacios(!verSoloVacios)}
                                         class={`w-12 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${verSoloVacios ? 'bg-rose-500 justify-end' : 'bg-gray-300 justify-start'}`}
@@ -284,7 +284,7 @@
                                             
                                             // Texto dinámico con salto de línea y enlace directo al Google Form al final
                                             const textoMensaje = encodeURIComponent(
-                                                `Hola, me gustaría solicitar el turno del ${t.fechaTexto} en ${t.lugar} de ${t.hora}.\n\n` +
+                                                `Hola, a mí y a .... nos gustaría solicitar el turno del ${t.fechaTexto} en ${t.lugar} de ${t.hora}.\n\n` +
                                                 `-------------------------\n` +
                                                 `🔗 Link de Asignación:\n${LINK_FORMULARIO}`
                                             );
