@@ -30,6 +30,9 @@
         // Número de WhatsApp configurado para Chile
         const MI_WHATSAPP = "56935246020";
 
+        // Enlace directo a tu Google Form para asignaciones rápidas
+        const LINK_FORMULARIO = "https://forms.gle/aksjd95gpLv5aFqY7";
+
         // Estructura fija y completa con los 70 turnos semanales
         const estructuraTurnosBase = [
             // LUNES
@@ -57,7 +60,7 @@
             { dia: "Martes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
             { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
             { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
-            { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Martes", pueblo: "Los Sauces", language: "es", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
             // MIÉRCOLES
             { dia: "Miércoles", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
             { dia: "Miércoles", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
@@ -129,9 +132,8 @@
             if (!objetivo) return "";
 
             const hoy = new Date();
-            const diaActualSemana = hoy.getDay(); // 0=Dom, 1=Lun ... 6=Sab
+            const diaActualSemana = hoy.getDay(); 
             
-            // Calculamos los días de diferencia relativos al lunes de esta semana actual
             const distanciaAlLunes = diaActualSemana === 0 ? -6 : 1 - diaActualSemana;
             
             const fechaResultado = new Date(hoy);
@@ -144,7 +146,7 @@
             const [activeTab, setActiveTab] = React.useState("turnos");
             const [turnos, setTurnos] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
-            const [verSoloVacios, setVerSoloVacios] = React.useState(false); // Cambiado a false por defecto para ver todo desde el inicio
+            const [verSoloVacios, setVerSoloVacios] = React.useState(false); 
             const [filtroDia, setFiltroDia] = React.useState("Todos");
             const [busquedaNombre, setBusquedaNombre] = React.useState("");
             const [filtroPuebloLugares, setFiltroPuebloLugares] = React.useState("Todos");
@@ -158,7 +160,7 @@
                             const response = await fetch(SCRIPT_URL);
                             respuestasForm = await response.json();
                         } catch (e) {
-                            console.log("Planilla vacía o sin datos iniciales. Desplegando turnos base.");
+                            console.log("Desplegando turnos base.");
                         }
                         
                         const turnosCombinados = estructuraTurnosBase.map((base, index) => {
@@ -279,7 +281,13 @@
                                         .map(t => {
                                             const esVacio = t.publicadores.length === 0;
                                             const cfg = configPueblos[t.pueblo] || configPueblos["Purén"];
-                                            const textoMensaje = encodeURIComponent(`Hola, me gustaría solicitar el turno del ${t.fechaTexto} en ${t.lugar} de ${t.hora}.`);
+                                            
+                                            // Texto dinámico con salto de línea y enlace directo al Google Form al final
+                                            const textoMensaje = encodeURIComponent(
+                                                `Hola, me gustaría solicitar el turno del ${t.fechaTexto} en ${t.lugar} de ${t.hora}.\n\n` +
+                                                `-------------------------\n` +
+                                                `🔗 Link de Asignación:\n${LINK_FORMULARIO}`
+                                            );
                                             
                                             return (
                                                 <div 
