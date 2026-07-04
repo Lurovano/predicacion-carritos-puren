@@ -3,410 +3,533 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Panel de Gestión de Turnos</title>
+    <title>Panel de Predicación Pública</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: #f8fafc;
+            background-color: #f3f4f6;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
-        .hidden-section { display: none !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="text-slate-800 pb-24">
+<body class="bg-gray-50 text-gray-800">
 
-    <div class="max-w-md mx-auto min-h-screen relative flex flex-col justify-between overflow-x-hidden">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // ⚠️ PEGA AQUÍ TU URL LARGA DE GOOGLE APPS SCRIPT:
+        const SCRIPT_URL = https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnTBpCQmHZd6HZRU9efIqIjRHSr9x-tOqdHYOQ5YKwWQ-ZYuDAUifBzwDZW5bYokL7px2Aq4zoicumV94eyTNc7nVOm2dfO4u8lHktVj4X-L-Kz_ttcNJOHJzn3i17WIm8OzZ0LE-N0olEL7fiZijlYTCnzzMQnVSjK9FmC_HCUd7uR81JM7F8DCNN9v4r1fxDhveV2zNm_o_8ABZ3CpoUSpJs8sdLxzjZWPsDKynqQtiY1jowXxD59hZbof02FhPZjmNwbAj_KqM4r591QzNihVixIB0g&lib=MUBrtIT4z3mPWomjT5Y0aN6Fqd-barZfV;
         
-        <header class="bg-slate-950 text-slate-100 p-4 sticky top-0 z-50 shadow-sm border-b border-slate-800">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-lg font-semibold tracking-tight text-slate-200">Panel de Predicación Pública</h1>
-                    <p class="text-xs text-slate-400 font-medium">Congregación Purén</p>
-                </div>
-                <span class="bg-slate-800 text-slate-300 font-medium text-[11px] px-2.5 py-1 rounded-md border border-slate-700 shadow-sm">
-                    Semana Activa
-                </span>
-            </div>
-        </header>
+        // ⚠️ PEGA AQUÍ TU NÚMERO DE WHATSAPP (Ej: 56912345678, sin espacios ni el "+"):
+        const MI_WHATSAPP = 56935246020;
 
-        <main class="p-4 flex-grow">
-            
-            <section id="sec-turnos" class="space-y-4">
-                <div class="grid grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <div class="text-[11px] text-rose-700 font-semibold uppercase tracking-wider">Libres</div>
-                        <div id="count-libres" class="text-xl font-bold text-slate-900 mt-0.5">0</div>
-                    </div>
-                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <div class="text-[11px] text-emerald-700 font-semibold uppercase tracking-wider">Asignados</div>
-                        <div id="count-asignados" class="text-xl font-bold text-slate-900 mt-0.5">0</div>
-                    </div>
-                    <div class="bg-slate-950 p-2 rounded-lg text-slate-100">
-                        <div class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total</div>
-                        <div id="count-total" class="text-xl font-bold text-white mt-0.5">0</div>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm">
-                    <div>
-                        <span class="text-sm font-semibold text-slate-700">Filtro rápido de cobertura</span>
-                        <p class="text-xs text-slate-400">Mostrar solo espacios disponibles</p>
-                    </div>
-                    <button id="toggle-vacios" class="w-11 h-6 flex items-center bg-slate-800 justify-end rounded-full p-1 transition-all duration-200">
-                        <div class="bg-white w-4 h-4 rounded-full shadow-sm"></div>
-                    </button>
-                </div>
-
-                <div id="container-dias" class="flex flex-wrap gap-1.5 py-1"></div>
-                <div id="lista-turnos" class="space-y-3"></div>
-            </section>
-
-            <section id="sec-miturno" class="space-y-4 hidden-section">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Consulta de Asignaciones Personales</label>
-                    <input id="search-nombre" type="text" placeholder="Escribe tu nombre o apellido..." class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-800 text-sm transition-all" />
-                </div>
-                <div id="lista-mis-turnos" class="space-y-3"></div>
-            </section>
-
-            <section id="sec-lugares" class="space-y-4 hidden-section">
-                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-0.5">Ubicación Administrativa</p>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button id="btn-pueblo-todos" class="py-2 px-1 text-xs font-semibold rounded-lg text-center bg-slate-900 text-white shadow-sm transition-all">Todos</button>
-                        <button id="btn-pueblo-puren" class="py-2 px-1 text-xs font-semibold rounded-lg text-center bg-slate-50 text-slate-600 border border-slate-200 transition-all">Purén</button>
-                        <button id="btn-pueblo-sauces" class="py-2 px-1 text-xs font-semibold rounded-lg text-center bg-slate-50 text-slate-600 border border-slate-200 transition-all">Los Sauces</button>
-                    </div>
-
-                    <div id="row-puntos-especificos" class="pt-3 border-t border-slate-100 hidden-section">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-0.5 mb-2">Puntos Específicos de Predicación</p>
-                        <div id="container-chips-especificos" class="flex flex-wrap gap-1.5"></div>
-                    </div>
-                </div>
-
-                <div id="lista-agrupada-lugares" class="space-y-4"></div>
-            </section>
-
-        </main>
-
-        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-200 h-16 flex justify-around items-center z-50 px-2 shadow-xl">
-            <button id="nav-turnos" class="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-950 font-semibold transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <span class="text-[10px] tracking-wide">Turnos</span>
-            </button>
-            <button id="nav-miturno" class="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                <span class="text-[10px] tracking-wide">Mi Turno</span>
-            </button>
-            <button id="nav-lugares" class="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span class="text-[10px] tracking-wide">Lugares</span>
-            </button>
-        </nav>
-    </div>
-
-    <script>
-        // CONFIGURACIÓN DE CONTACTO (¡Cambia este número por el tuyo!)
-        const CONFIG_TELEFONO_ENCARGADO = "56935246020"; // <--- Pon tu número con código de país, sin el "+" ni espacios.
-
-        const turnos = [
-            { id: 1, dia: "Lunes", fecha: "16 Mar", pueblo: "Purén", lugar: "Plaza Purén", hora: "08:00 - 10:00 AM", publicadores: [] },
-            { id: 2, dia: "Lunes", fecha: "16 Mar", pueblo: "Purén", lugar: "Plaza Purén", hora: "13:00 - 15:00 PM", publicadores: ["Lucia Salgado", "Fabiola de Morales"] },
-            { id: 3, dia: "Lunes", fecha: "16 Mar", pueblo: "Purén", lugar: "Plaza Purén", hora: "16:00 - 18:00 PM", publicadores: [] },
-            { id: 4, dia: "Lunes", fecha: "16 Mar", pueblo: "Purén", lugar: "Hospital Purén", hora: "08:00 - 10:00 AM", publicadores: [] },
-            { id: 5, dia: "Lunes", fecha: "16 Mar", pueblo: "Purén", lugar: "Hospital Purén", hora: "12:00 - 14:00 PM", publicadores: ["Pedro Salgado", "Ana de Salgado"] },
-            { id: 6, dia: "Lunes", fecha: "16 Mar", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "08:00 - 10:00 AM", publicadores: [] },
-            { id: 7, dia: "Lunes", fecha: "16 Mar", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:00 - 14:00 PM", publicadores: ["Familia Urbano"] },
-            { id: 8, dia: "Lunes", fecha: "16 Mar", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "16:00 - 18:00 PM", publicadores: [] },
-            { id: 9, dia: "Martes", fecha: "17 Mar", pueblo: "Purén", lugar: "Feria Purén", hora: "09:00 - 11:00 AM", publicadores: [] },
-            { id: 10, dia: "Martes", fecha: "17 Mar", pueblo: "Purén", lugar: "Plaza Purén", hora: "11:00 - 13:00 PM", publicadores: ["Rodrigo Valdés"] },
-            { id: 11, dia: "Martes", fecha: "17 Mar", pueblo: "Los Sauces", lugar: "Feria Los Sauces", hora: "10:00 - 12:00 PM", publicadores: [] },
-            { id: 12, dia: "Miércoles", fecha: "18 Mar", pueblo: "Purén", lugar: "Hospital Purén", hora: "14:30 - 16:30 PM", publicadores: ["Filomena Sarabia", "Liliana de Lagos"] }
+        // Estructura fija y completa con los 70 turnos semanales corregidos
+        const estructuraTurnosBase = [
+            // LUNES
+            { dia: "Lunes", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Lunes", pueblo: "Purén", lugar: "Plaza Purén", hora: "1:00 pm - 3:00 pm" },
+            { dia: "Lunes", pueblo: "Purén", lugar: "Plaza Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Lunes", pueblo: "Purén", lugar: "Hospital Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Lunes", pueblo: "Purén", lugar: "Hospital Purén", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Lunes", pueblo: "Purén", lugar: "Hospital Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Lunes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Lunes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Lunes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Lunes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Lunes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Lunes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            // MARTES
+            { dia: "Martes", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Martes", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Martes", pueblo: "Purén", lugar: "Plaza Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Martes", pueblo: "Purén", lugar: "Hospital Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Martes", pueblo: "Purén", lugar: "Hospital Purén", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Martes", pueblo: "Purén", lugar: "Hospital Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Martes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Martes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Martes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            // MIÉRCOLES
+            { dia: "Miércoles", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Miércoles", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Miércoles", pueblo: "Purén", lugar: "Plaza Purén", hora: "4:30 pm - 6:30 pm" },
+            { dia: "Miércoles", pueblo: "Purén", lugar: "Hospital Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Miércoles", pueblo: "Purén", lugar: "Hospital Purén", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Miércoles", pueblo: "Purén", lugar: "Hospital Purén", hora: "4:30 pm - 6:30 pm" },
+            { dia: "Miércoles", pueblo: "Los Sauces", lugar: "Feria Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Miércoles", pueblo: "Los Sauces", lugar: "Feria Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Miércoles", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Miércoles", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "2:00 pm - 4:00 pm" },
+            // JUEVES
+            { dia: "Jueves", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Jueves", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Jueves", pueblo: "Purén", lugar: "Plaza Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Jueves", pueblo: "Purén", lugar: "Hospital Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Jueves", pueblo: "Purén", lugar: "Hospital Purén", hora: "10:00 am - 1:00 pm" },
+            { dia: "Jueves", pueblo: "Purén", lugar: "Hospital Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Jueves", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            // VIERNES
+            { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "10:00 am - 1:00 pm" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "2:30 pm - 4:30 pm" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "4:30 pm - 6:30 pm" },
+            { dia: "Viernes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Viernes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Viernes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Viernes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
+            { dia: "Viernes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
+            { dia: "Viernes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            // SÁBADO
+            { dia: "Sábado", pueblo: "Purén", lugar: "Plaza Purén", hora: "1:00 pm - 3:00 pm" },
+            { dia: "Sábado", pueblo: "Purén", lugar: "Plaza Purén", hora: "3:00 pm - 5:00 pm" },
+            { dia: "Sábado", pueblo: "Purén", lugar: "Plaza Purén", hora: "5:00 pm - 7:00 pm" },
+            { dia: "Sábado", pueblo: "Purén", lugar: "Feria Purén", hora: "8:00 am - 10:00 am" },
+            { dia: "Sábado", pueblo: "Purén", lugar: "Feria Purén", hora: "1:00 pm - 3:00 pm" },
+            { dia: "Sábado", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "12:30 pm - 2:30 pm" },
+            { dia: "Sábado", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "2:30 pm - 4:30 pm" },
+            { dia: "Sábado", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:30 pm - 6:30 pm" },
+            { dia: "Sábado", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:30 pm - 2:30 pm" },
+            { dia: "Sábado", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "2:30 pm - 4:30 pm" },
+            { dia: "Sábado", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:30 pm - 6:30 pm" }
         ];
 
         const diasSemana = ["Todos", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        
+        const configPueblos = {
+            "Purén": { bg: "bg-indigo-50", border: "border-indigo-600", text: "text-indigo-700", badge: "bg-indigo-100 text-indigo-800", rawColor: "indigo" },
+            "Los Sauces": { bg: "bg-amber-50", border: "border-amber-500", text: "text-amber-700", badge: "bg-amber-100 text-amber-800", rawColor: "amber" }
+        };
+
         const lugaresPorPueblo = {
             "Purén": ["Plaza Purén", "Hospital Purén", "Feria Purén"],
             "Los Sauces": ["Consultorio Los Sauces", "Feria Los Sauces", "Terminal Los Sauces"]
         };
 
-        let filtroDia = "Todos";
-        let verSoloVacios = true;
-        let filtroPuebloLugares = "Todos";
-        let filtroEspecificoLugar = "Todos";
+        function App() {
+            const [activeTab, setActiveTab] = React.useState("turnos");
+            const [turnos, setTurnos] = React.useState([]);
+            const [loading, setLoading] = React.useState(true);
 
-        const estilosCromaticos = {
-            "Purén": { border: "border-slate-500", badge: "bg-slate-100 text-slate-700 border border-slate-300", header: "bg-slate-700 text-white", activeChip: "bg-slate-700 text-white border-slate-700 font-medium" },
-            "Los Sauces": { border: "border-orange-800", badge: "bg-amber-50 text-amber-900 border border-amber-200", header: "bg-orange-950 text-amber-100", activeChip: "bg-orange-900 text-white border-orange-900 font-medium" }
-        };
+            // Filtros Sección 1: Turnos
+            const [filtroDia, setFiltroDia] = React.useState("Todos");
+            const [verSoloVacios, setVerSoloVacios] = React.useState(true);
 
-        const elListaTurnos = document.getElementById('lista-turnos');
-        const elListaMisTurnos = document.getElementById('lista-mis-turnos');
-        const elListaAgrupadaLugares = document.getElementById('lista-agrupada-lugares');
-        const elContainerDias = document.getElementById('container-dias');
-        const elRowPuntos = document.getElementById('row-puntos-especificos');
-        const elContainerChipsEspecificos = document.getElementById('container-chips-especificos');
+            // Filtros Sección 2: Mi Turno
+            const [busquedaNombre, setBusquedaNombre] = React.useState("");
 
-        function actualizarContadores() {
-            document.getElementById('count-total').innerText = turnos.length;
-            document.getElementById('count-asignados').innerText = turnos.filter(t => t.publicadores.length > 0).length;
-            document.getElementById('count-libres').innerText = turnos.filter(t => t.publicadores.length === 0).length;
-        }
+            // Filtros Sección 3: Lugares
+            const [filtroPuebloLugares, setFiltroPuebloLugares] = React.useState("Todos");
+            const [filtroEspecificoLugar, setFiltroEspecificoLugar] = React.useState("Todos");
 
-        function generarEnlaceWhatsApp(t) {
-            const texto = `Hola, me gustaría inscribirme en el turno libre de Predicación Pública:\n\n📍 *Lugar:* ${t.lugar} (${t.pueblo})\n📅 *Día:* ${t.dia} ${t.fecha}\n⏰ *Hora:* ${t.hora}`;
-            return `https://api.whatsapp.com/send?phone=${CONFIG_TELEFONO_ENCARGADO}&text=${encodeURIComponent(texto)}`;
-        }
-
-        function renderTurnos() {
-            elListaTurnos.innerHTML = '';
-            const filtrados = turnos.filter(t => {
-                const matchDia = (filtroDia === "Todos" || t.dia === filtroDia);
-                const matchVacio = (!verSoloVacios || t.publicadores.length === 0);
-                return matchDia && matchVacio;
-            });
-
-            if(filtrados.length === 0) {
-                elListaTurnos.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-medium bg-white rounded-xl border border-slate-100 shadow-sm">No hay turnos disponibles bajo este filtro.</div>';
-                return;
-            }
-
-            filtrados.forEach(t => {
-                const esVacio = t.publicadores.length === 0;
-                const estilo = estilosCromaticos[t.pueblo];
-                const bgFondo = esVacio ? 'bg-rose-50/20 ring-1 ring-rose-100' : 'bg-white';
-
-                let botonAccion = '';
-                if (esVacio) {
-                    botonAccion = `
-                        <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
-                            <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">🔴 Disponible</span>
-                            <a href="${generarEnlaceWhatsApp(t)}" target="_blank" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all target-link">
-                                <span>Agendar Turno</span> ➡️
-                            </a>
-                        </div>
-                    `;
-                } else {
-                    botonAccion = `
-                        <div class="mt-3 pt-2 border-t border-slate-100 flex items-center">
-                            <span class="text-xs font-medium text-slate-500">Asignación: <span class="text-xs font-medium text-slate-800 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">👥 ${t.publicadores.join(" y ")}</span></span>
-                        </div>
-                    `;
-                }
-
-                elListaTurnos.innerHTML += `
-                    <div class="${bgFondo} rounded-xl border-l-4 ${estilo.border} border-y border-r border-slate-200 p-4 shadow-sm">
-                        <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <span class="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${estilo.badge}">${t.pueblo}</span>
-                                <h3 class="font-semibold text-slate-900 text-sm mt-1.5">${t.lugar}</h3>
-                            </div>
-                            <div class="text-right flex-shrink-0">
-                                <span class="text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">${t.dia} ${t.fecha}</span>
-                                <p class="text-[11px] text-slate-500 mt-1 font-medium">${t.hora}</p>
-                            </div>
-                        </div>
-                        ${botonAccion}
-                    </div>
-                `;
-            });
-        }
-
-        function renderLugaresAgrupados() {
-            elListaAgrupadaLugares.innerHTML = '';
-
-            Object.keys(lugaresPorPueblo).forEach(pueblo => {
-                if (filtroPuebloLugares !== "Todos" && pueblo !== filtroPuebloLugares) return;
-
-                lugaresPorPueblo[pueblo].forEach(lugar => {
-                    if (filtroEspecificoLugar !== "Todos" && lugar !== filtroEspecificoLugar) return;
-
-                    const turnosDelLugar = turnos.filter(t => t.lugar === lugar);
-                    if (turnosDelLugar.length === 0) return;
-
-                    const estilo = estilosCromaticos[pueblo];
-                    let filasHTML = '';
-
-                    turnosDelLugar.forEach(t => {
-                        const esVacio = t.publicadores.length === 0;
-                        const bgFila = esVacio ? 'bg-rose-50/10' : 'bg-white';
+            // Cargar datos en vivo desde Google Sheets al iniciar la app
+            React.useEffect(() => {
+                async function fetchTurnos() {
+                    try {
+                        const response = await fetch(SCRIPT_URL);
+                        const respuestasForm = await response.json();
                         
-                        let accionFila = esVacio 
-                            ? `<a href="${generarEnlaceWhatsApp(t)}" target="_blank" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-1 rounded">Reservar</a>` 
-                            : `<span class="text-slate-700 font-medium">👥 ${t.publicadores.join(" y ")}</span>`;
+                        // Combinamos la estructura fija con los nombres del formulario
+                        const turnosCombinados = estructuraTurnosBase.map((base, index) => {
+                            // Buscamos si hay alguna fila que coincida en día y contenga el lugar y la hora
+                            const match = respuestasForm.find(r => 
+                                r.dia === base.dia && 
+                                r.turno.includes(base.lugar) && 
+                                r.turno.includes(base.hora)
+                            );
+                            
+                            let publicadoresArray = [];
+                            if (match) {
+                                if (match.publicador1) publicadoresArray.push(match.publicador1);
+                                if (match.publicador2) publicadoresArray.push(match.publicador2);
+                            }
 
-                        filasHTML += `
-                            <div class="p-3 flex justify-between items-center text-xs ${bgFila}">
-                                <div class="space-y-0.5">
-                                    <span class="font-semibold text-slate-800">${t.dia} — <span class="text-slate-500 font-normal">${t.hora}</span></span>
-                                    <p class="text-slate-500 mt-0.5">${accionFila}</p>
-                                </div>
-                                <span class="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded border border-slate-200">${t.fecha}</span>
-                            </div>
-                        `;
-                    });
+                            return {
+                                id: index + 1,
+                                ...base,
+                                fecha: "", // No requerida dinámicamente ya que se filtra por Día de la semana
+                                publicadores: publicadoresArray
+                            };
+                        });
 
-                    elListaAgrupadaLugares.innerHTML += `
-                        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                            <div class="p-3 flex justify-between items-center ${estilo.header}">
-                                <div>
-                                    <h3 class="font-bold text-xs tracking-wide uppercase">${lugar}</h3>
-                                    <p class="text-[9px] opacity-75 font-medium tracking-wider uppercase mt-0.5">${pueblo}</p>
-                                </div>
-                                <span class="text-[11px] bg-white/10 border border-white/20 px-2 py-0.5 rounded font-medium">${turnosDelLugar.length} slots</span>
-                            </div>
-                            <div class="divide-y divide-slate-100">${filasHTML}</div>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        function renderSubChips(pueblo) {
-            elContainerChipsEspecificos.innerHTML = '';
-            if (pueblo === "Todos") return;
-
-            const btnAll = document.createElement('button');
-            btnAll.innerText = "Todos los puntos";
-            btnAll.className = `px-2.5 py-1 text-xs rounded-md border transition-all ${filtroEspecificoLugar === 'Todos' ? 'bg-slate-900 text-white border-slate-900 font-medium' : 'bg-slate-50 text-slate-600 border-slate-200'}`;
-            btnAll.addEventListener('click', () => {
-                filtroEspecificoLugar = "Todos";
-                renderSubChips(pueblo);
-                renderLugaresAgrupados();
-            });
-            elContainerChipsEspecificos.appendChild(btnAll);
-
-            lugaresPorPueblo[pueblo].forEach(lugar => {
-                const isSelected = filtroEspecificoLugar === lugar;
-                const btn = document.createElement('button');
-                btn.innerText = lugar.replace(" Purén", "").replace(" Los Sauces", "");
-                
-                if (isSelected) {
-                    btn.className = `px-2.5 py-1 text-xs rounded-md border transition-all ${estilosCromaticos[pueblo].activeChip}`;
-                } else {
-                    btn.className = 'px-2.5 py-1 text-xs rounded-md border bg-slate-50 text-slate-600 border-slate-200 transition-all';
+                        setTurnos(turnosCombinados);
+                        setLoading(false);
+                    } catch (error) {
+                        console.error("Error cargando turnos:", error);
+                        setLoading(false);
+                    }
                 }
+                fetchTurnos();
+            }, []);
 
-                btn.addEventListener('click', () => {
-                    filtroEspecificoLugar = lugar;
-                    renderSubChips(pueblo);
-                    renderLugaresAgrupados();
-                });
-                elContainerChipsEspecificos.appendChild(btn);
-            });
-        }
+            React.useEffect(() => {
+                setFiltroEspecificoLugar("Todos");
+            }, [filtroPuebloLugares]);
 
-        function ejecutarFiltroPueblo(pueblo) {
-            filtroPuebloLugares = pueblo;
-            filtroEspecificoLugar = "Todos";
-
-            document.getElementById('btn-pueblo-todos').className = `py-2 px-1 text-xs font-semibold rounded-lg text-center border transition-all ${pueblo === 'Todos' ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200'}`;
-            document.getElementById('btn-pueblo-puren').className = `py-2 px-1 text-xs font-semibold rounded-lg text-center border transition-all ${pueblo === 'Purén' ? 'bg-slate-700 text-white border-slate-700 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200'}`;
-            document.getElementById('btn-pueblo-sauces').className = `py-2 px-1 text-xs font-semibold rounded-lg text-center border transition-all ${pueblo === 'Los Sauces' ? 'bg-orange-950 text-amber-100 border-orange-950 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200'}`;
-
-            if (pueblo === "Todos") {
-                elRowPuntos.classList.add('hidden-section');
-            } else {
-                elRowPuntos.classList.remove('hidden-section');
-                renderSubChips(pueblo);
-            }
-            renderLugaresAgrupados();
-        }
-
-        diasSemana.forEach(dia => {
-            const btn = document.createElement('button');
-            btn.innerText = dia;
-            btn.className = `px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${dia === 'Todos' ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-white text-slate-600 border-slate-200'}`;
-            btn.addEventListener('click', () => {
-                filtroDia = dia;
-                Array.from(elContainerDias.children).forEach(b => b.className = 'px-3 py-1.5 text-xs font-semibold rounded-full bg-white text-slate-600 border border-slate-200');
-                btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-900 text-white border-slate-900 shadow-sm';
-                renderTurnos();
-            });
-            elContainerDias.appendChild(btn);
-        });
-
-        const btnToggleVacios = document.getElementById('toggle-vacios');
-        btnToggleVacios.addEventListener('click', () => {
-            verSoloVacios = !verSoloVacios;
-            if (verSoloVacios) {
-                btnToggleVacios.className = "w-11 h-6 flex items-center bg-slate-800 justify-end rounded-full p-1 transition-all duration-200";
-            } else {
-                btnToggleVacios.className = "w-11 h-6 flex items-center bg-slate-200 justify-start rounded-full p-1 transition-all duration-200";
-            }
-            renderTurnos();
-        });
-
-        const inputNombre = document.getElementById('search-nombre');
-        inputNombre.addEventListener('input', () => {
-            const query = inputNombre.value.trim().toLowerCase();
-            elListaMisTurnos.innerHTML = '';
-
-            if (!query) {
-                elListaMisTurnos.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-medium bg-white rounded-xl border border-slate-100 shadow-sm">Ingresa tu nombre o apellido arriba para ubicar tus turnos.</div>';
-                return;
-            }
-
-            const misAsignaciones = turnos.filter(t => t.publicadores.some(p => p.toLowerCase().includes(query)));
-
-            if (misAsignaciones.length === 0) {
-                elListaMisTurnos.innerHTML = `<div class="text-center py-8 text-slate-500 font-medium text-xs bg-slate-100 border border-slate-200 rounded-xl p-4">No se registran turnos asignados esta semana para el término ingresado.</div>`;
-                return;
-            }
-
-            misAsignaciones.forEach(t => {
-                const estilo = estilosCromaticos[t.pueblo];
-                elListaMisTurnos.innerHTML += `
-                    <div class="bg-white rounded-xl border-l-4 ${estilo.border} border-y border-r border-slate-200 p-4 shadow-sm">
-                        <div class="flex justify-between items-center gap-2">
-                            <div>
-                                <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded ${estilo.badge}">${t.pueblo}</span>
-                                <h3 class="font-semibold text-slate-900 text-sm mt-1.5">${t.lugar}</h3>
-                                <p class="text-xs text-slate-500 mt-0.5 font-medium">${t.hora}</p>
-                            </div>
-                            <div class="bg-slate-900 text-slate-100 px-3 py-2 rounded-lg text-center min-w-[70px] shadow-sm border border-slate-800">
-                                <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">${t.dia}</p>
-                                <p class="text-xs font-bold text-white mt-0.5">${t.fecha}</p>
-                            </div>
-                        </div>
+            if (loading) {
+                return (
+                    <div class="max-w-md mx-auto bg-gray-50 min-h-screen flex flex-col justify-center items-center">
+                        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-3"></div>
+                        <p class="text-sm font-medium text-gray-500">Cargando turnos en vivo...</p>
                     </div>
-                `;
-            });
-        });
+                );
+            }
 
-        document.getElementById('btn-pueblo-todos').addEventListener('click', () => ejecutarFiltroPueblo('Todos'));
-        document.getElementById('btn-pueblo-puren').addEventListener('click', () => ejecutarFiltroPueblo('Purén'));
-        document.getElementById('btn-pueblo-sauces').addEventListener('click', () => ejecutarFiltroPueblo('Los Sauces'));
+            const totalTurnos = turnos.length;
+            const asignados = turnos.filter(t => t.publicadores.length > 0).length;
+            const libres = totalTurnos - asignados;
 
-        const secciones = {
-            'turnos': document.getElementById('sec-turnos'),
-            'miturno': document.getElementById('sec-miturno'),
-            'lugares': document.getElementById('sec-lugares')
-        };
-        const tabs = {
-            'turnos': document.getElementById('nav-turnos'),
-            'miturno': document.getElementById('nav-miturno'),
-            'lugares': document.getElementById('nav-lugares')
-        };
+            return (
+                <div class="max-w-md mx-auto bg-gray-50 min-h-screen pb-24 shadow-xl relative flex flex-col justify-between overflow-x-hidden">
+                    
+                    {/* ENCABEZADO */}
+                    <header class="bg-slate-900 text-white p-4 sticky top-0 z-40 shadow-md">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h1 class="text-xl font-bold tracking-tight">Predicación Pública</h1>
+                                <p class="text-xs text-slate-400">Congregación Purén</p>
+                            </div>
+                            <span class="bg-emerald-500 text-slate-950 font-bold text-xs px-2.5 py-1 rounded-full shadow animate-pulse">
+                                En Vivo
+                            </span>
+                        </div>
+                    </header>
 
-        Object.keys(tabs).forEach(tabId => {
-            tabs[tabId].addEventListener('click', () => {
-                Object.keys(secciones).forEach(id => secciones[id].classList.add('hidden-section'));
-                Object.keys(tabs).forEach(id => tabs[id].className = 'flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 transition-all');
-                
-                secciones[tabId].classList.remove('hidden-section');
-                tabs[tabId].className = 'flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-950 font-semibold transition-all';
-            });
-        });
+                    {/* CONTENIDO DINÁMICO */}
+                    <main class="p-4 flex-grow">
+                        
+                        {/* ================= SECCIÓN 1: TURNOS ================= */}
+                        {activeTab === "turnos" && (
+                            <div class="space-y-4">
+                                {/* Resumen / Contador */}
+                                <div class="grid grid-cols-3 gap-2 bg-white p-3 rounded-xl shadow-sm border border-gray-100 text-center">
+                                    <div class="bg-rose-50 p-2 rounded-lg">
+                                        <div class="text-xs text-rose-600 font-medium">Libres</div>
+                                        <div class="text-xl font-bold text-rose-700">{libres}</div>
+                                    </div>
+                                    <div class="bg-emerald-50 p-2 rounded-lg">
+                                        <div class="text-xs text-emerald-600 font-medium">Asignados</div>
+                                        <div class="text-xl font-bold text-emerald-700">{asignados}</div>
+                                    </div>
+                                    <div class="bg-slate-50 p-2 rounded-lg">
+                                        <div class="text-xs text-slate-600 font-medium">Total</div>
+                                        <div class="text-xl font-bold text-slate-800">{totalTurnos}</div>
+                                    </div>
+                                </div>
 
-        actualizarContadores();
-        renderTurnos();
-        renderLugaresAgrupados();
-        elListaMisTurnos.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-medium bg-white rounded-xl border border-slate-100 shadow-sm">Ingresa tu nombre o apellido arriba para ubicar tus turnos.</div>';
+                                {/* Interruptor Visual Huecos Libres */}
+                                <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl shadow-sm border border-gray-100">
+                                    <span class="text-sm font-medium text-gray-700">Mostrar solo huecos libres</span>
+                                    <button 
+                                        onClick={() => setVerSoloVacios(!verSoloVacios)}
+                                        class={`w-12 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${verSoloVacios ? 'bg-rose-500 justify-end' : 'bg-gray-300 justify-start'}`}
+                                    >
+                                        <div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300"></div>
+                                    </button>
+                                </div>
+
+                                {/* Filtro por Días (Chips) */}
+                                <div class="flex flex-wrap gap-1.5 py-1">
+                                    {diasSemana.map(dia => (
+                                        <button
+                                            key={dia}
+                                            onClick={() => setFiltroDia(dia)}
+                                            class={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all ${
+                                                filtroDia === dia 
+                                                ? 'bg-slate-800 text-white shadow' 
+                                                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            {dia}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Lista de Tarjetas */}
+                                <div class="space-y-3">
+                                    {turnos
+                                        .filter(t => filtroDia === "Todos" || t.dia === filtroDia)
+                                        .filter(t => !verSoloVacios || t.publicadores.length === 0)
+                                        .map(t => {
+                                            const esVacio = t.publicadores.length === 0;
+                                            const cfg = configPueblos[t.pueblo] || configPueblos["Purén"];
+                                            const textoMensaje = encodeURIComponent(`Hola, me gustaría solicitar el turno del Lector: ${t.dia} en ${t.lugar} de ${t.hora}.`);
+                                            
+                                            return (
+                                                <div 
+                                                    key={t.id} 
+                                                    class={`bg-white rounded-xl shadow-sm border-l-4 ${cfg.border} p-4 transition-all ${esVacio ? 'ring-2 ring-rose-200/60 bg-rose-50/20' : ''}`}
+                                                >
+                                                    <div class="flex justify-between items-start mb-2">
+                                                        <div>
+                                                            <span class={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md ${cfg.badge}`}>
+                                                                {t.pueblo}
+                                                            </span>
+                                                            <h3 class="font-bold text-gray-900 mt-1">{t.lugar}</h3>
+                                                        </div>
+                                                        <div class="text-right">
+                                                            <span class="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-md">
+                                                                {t.dia}
+                                                            </span>
+                                                            <p class="text-xs text-gray-500 mt-1 font-medium">{t.hora}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mt-3 pt-2 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                        <div class="flex items-center space-x-1.5">
+                                                            <span class="text-xs font-medium text-gray-500">Publicadores:</span>
+                                                            {esVacio ? (
+                                                                <span class="text-xs font-bold text-rose-600 flex items-center">
+                                                                    🔴 Disponible
+                                                                </span>
+                                                            ) : (
+                                                                <span class="text-xs font-semibold text-gray-800">
+                                                                    {t.publicadores.join(" y ")}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {esVacio && (
+                                                            <a 
+                                                                href={`https://wa.me/${MI_WHATSAPP}?text=${textoMensaje}`}
+                                                                target="_blank"
+                                                                class="bg-emerald-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg shadow-sm hover:bg-emerald-700 transition-colors self-start sm:self-auto"
+                                                            >
+                                                                📲 Solicitar por WhatsApp
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ================= SECCIÓN 2: MI TURNO ================= */}
+                        {activeTab === "mi-turno" && (
+                            <div class="space-y-4">
+                                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
+                                        Escribe tu nombre completo o apellido
+                                    </label>
+                                    <input 
+                                        type="text"
+                                        placeholder="Ej. Rodrigo Valdés"
+                                        value={busquedaNombre}
+                                        onChange={(e) => setBusquedaNombre(e.target.value)}
+                                        class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm"
+                                    />
+                                </div>
+
+                                <div class="space-y-3">
+                                    {busquedaNombre.trim() === "" ? (
+                                        <div class="text-center py-8 text-gray-400 text-sm">
+                                            Ingresa tu nombre arriba para mapear tus asignaciones de la semana.
+                                        </div>
+                                    ) : (
+                                        (() => {
+                                            const misAsignaciones = turnos.filter(t => 
+                                                t.publicadores.some(p => p.toLowerCase().includes(busquedaNombre.toLowerCase()))
+                                            );
+
+                                            if (misAsignaciones.length === 0) {
+                                                return (
+                                                    <div class="text-center py-8 text-rose-500 font-medium text-sm bg-rose-50 rounded-xl p-4">
+                                                        No se encontraron turnos asignados para "{busquedaNombre}".
+                                                    </div>
+                                                );
+                                            }
+
+                                            return misAsignaciones.map(t => {
+                                                const cfg = configPueblos[t.pueblo] || configPueblos["Purén"];
+                                                return (
+                                                    <div key={t.id} class={`bg-white rounded-xl shadow-sm border-l-4 ${cfg.border} p-4`}>
+                                                        <div class="flex justify-between items-center">
+                                                            <div>
+                                                                <span class={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${cfg.badge}`}>
+                                                                    {t.pueblo}
+                                                                </span>
+                                                                <h3 class="font-bold text-gray-900 mt-1">{t.lugar}</h3>
+                                                                <p class="text-xs text-gray-500 mt-0.5">{t.hora}</p>
+                                                            </div>
+                                                            <div class="bg-slate-900 text-white px-3 py-2 rounded-lg text-center min-w-[75px]">
+                                                                <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Día</p>
+                                                                <p class="text-sm font-black">{t.dia}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            });
+                                        })()
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ================= SECCIÓN 3: LUGARES ================= */}
+                        {activeTab === "lugares" && (
+                            <div class="space-y-4">
+                                {/* FILTRO NIVEL 1 */}
+                                <div class="bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 space-y-2">
+                                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-1">Filtrar por Pueblo</p>
+                                    <div class="grid grid-cols-3 gap-1.5">
+                                        {["Todos", "Purén", "Los Sauces"].map(pueblo => {
+                                            let btnStyle = "bg-gray-100 text-gray-600";
+                                            if (filtroPuebloLugares === pueblo) {
+                                                if (pueblo === "Todos") btnStyle = "bg-slate-800 text-white shadow";
+                                                if (pueblo === "Purén") btnStyle = "bg-indigo-600 text-white shadow";
+                                                if (pueblo === "Los Sauces") btnStyle = "bg-amber-500 text-white shadow";
+                                            }
+                                            return (
+                                                <button
+                                                    key={pueblo}
+                                                    onClick={() => setFiltroPuebloLugares(pueblo)}
+                                                    class={`py-2 px-1 text-xs font-bold rounded-lg text-center transition-all ${btnStyle}`}
+                                                >
+                                                    {pueblo}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* FILTRO NIVEL 2 */}
+                                    {filtroPuebloLugares !== "Todos" && (
+                                        <div class="pt-2 border-t border-gray-100">
+                                            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-1 mb-1.5">Puntos específicos</p>
+                                            <div class="flex flex-wrap gap-1">
+                                                <button
+                                                    onClick={() => setFiltroEspecificoLugar("Todos")}
+                                                    class={`px-2.5 py-1 text-xs font-medium rounded-md border ${
+                                                        filtroEspecificoLugar === "Todos"
+                                                        ? 'bg-slate-700 text-white border-slate-700'
+                                                        : 'bg-white text-gray-600 border-gray-200'
+                                                    }`}
+                                                >
+                                                    Todos los puntos
+                                                </button>
+                                                {lugaresPorPueblo[filtroPuebloLugares].map(lugar => {
+                                                    const isSelected = filtroEspecificoLugar === lugar;
+                                                    const isPuren = filtroPuebloLugares === "Purén";
+                                                    const activeChipClass = isPuren ? 'bg-indigo-100 text-indigo-900 border-indigo-400 font-bold' : 'bg-amber-100 text-amber-900 border-amber-400 font-bold';
+                                                    
+                                                    return (
+                                                        <button
+                                                            key={lugar}
+                                                            onClick={() => setFiltroEspecificoLugar(lugar)}
+                                                            class={`px-2.5 py-1 text-xs rounded-md border transition-all ${
+                                                                isSelected ? activeChipClass : 'bg-white text-gray-600 border-gray-200'
+                                                            }`}
+                                                        >
+                                                            {lugar.replace(" Purén", "").replace(" Los Sauces", "")}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Despliegue de información agrupado */}
+                                <div class="space-y-4">
+                                    {Object.keys(lugaresPorPueblo)
+                                        .filter(p => filtroPuebloLugares === "Todos" || p === filtroPuebloLugares)
+                                        .map(pueblo => {
+                                            return lugaresPorPueblo[pueblo]
+                                                .filter(l => filtroEspecificoLugar === "Todos" || l === filtroEspecificoLugar)
+                                                .map(lugar => {
+                                                    const turnosDelLugar = turnos.filter(t => t.lugar === lugar);
+                                                    if (turnosDelLugar.length === 0) return null;
+
+                                                    return (
+                                                        <div key={lugar} class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                                            <div class={`p-3 flex justify-between items-center ${pueblo === 'Purén' ? 'bg-indigo-900 text-white' : 'bg-amber-600 text-white'}`}>
+                                                                <div>
+                                                                    <h3 class="font-bold text-sm tracking-tight">{lugar}</h3>
+                                                                    <p class="text-[10px] opacity-80">{pueblo}</p>
+                                                                </div>
+                                                                <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-bold">
+                                                                    {turnosDelLugar.length} turnos
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="divide-y divide-gray-100">
+                                                                {turnosDelLugar.map(t => {
+                                                                    const esVacio = t.publicadores.length === 0;
+                                                                    return (
+                                                                        <div key={t.id} class={`p-3 flex justify-between items-center text-xs ${esVacio ? 'bg-rose-50/40' : ''}`}>
+                                                                            <div class="space-y-0.5">
+                                                                                <span class="font-bold text-slate-800">{t.dia} ({t.hora})</span>
+                                                                                <div class="text-gray-500">
+                                                                                    {esVacio ? (
+                                                                                        <span class="text-rose-600 font-bold">🔴 Falta Asignar</span>
+                                                                                    ) : (
+                                                                                        <span>👥 {t.publicadores.join(" y ")}</span>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                });
+                                        })}
+                                </div>
+                            </div>
+                        )}
+
+                    </main>
+
+                    {/* MENÚ DE NAVEGACIÓN INFERIOR */}
+                    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 h-16 flex justify-around items-center z-50 px-2 shadow-2xl">
+                        <button 
+                            onClick={() => setActiveTab("turnos")}
+                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "turnos" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span class="text-[10px]">Turnos</span>
+                        </button>
+
+                        <button 
+                            onClick={() => setActiveTab("mi-turno")}
+                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "mi-turno" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            <span class="text-[10px]">Mi Turno</span>
+                        </button>
+
+                        <button 
+                            onClick={() => setActiveTab("lugares")}
+                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "lugares" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <span class="text-[10px]">Lugares</span>
+                        </button>
+                    </nav>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
