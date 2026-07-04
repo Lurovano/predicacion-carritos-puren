@@ -22,7 +22,8 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE3HWIoO3XMe87I8oM7K-gZg0E0oGq7L8HkgZ0nZ_H1W3mPWomjT5Y0aN6Fqd-barZfV/exec";
+        // URL nueva del script vinculada correctamente
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybTN_rsLt2Df79aEv5rAsjA4Y7oIohmmmo16MjPG0D-M2X9hLIYW5gjD48gr4qOmYk/exec";
         const MI_WHATSAPP = "56935246020";
         const LINK_FORMULARIO = "https://forms.gle/aksjd95gpLv5aFqY7";
 
@@ -80,7 +81,7 @@
             // VIERNES
             { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
-            { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", fontFamily: "sans-serif", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "4:00 pm - 6:00 pm" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "8:00 am - 10:00 am" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "10:00 am - 1:00 pm" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "2:30 pm - 4:30 pm" },
@@ -150,15 +151,13 @@
                             const response = await fetch(SCRIPT_URL);
                             respuestasForm = await response.json();
                         } catch (e) {
-                            console.log("Error leyendo datos del script.");
+                            console.log("Error de red con el script remoto.");
                         }
                         
                         const turnosCombinados = estructuraTurnosBase.map((base, index) => {
-                            // Mapeo flexible para leer los títulos reales de tu hoja
                             const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => {
-                                // Busca en la propiedad exacta o en variaciones que contengan el texto
-                                const valorDia = r.dia || r["Selecciona el díaLunesMartesMiércolesJuevesViernesSábado"] || "";
-                                const valorTurno = r.turno || r["Selecciona tu turno"] || Object.values(r).find(v => typeof v === 'string' && v.includes(base.lugar)) || "";
+                                const valorDia = r.dia || "";
+                                const valorTurno = r.turno || "";
                                 
                                 return valorDia === base.dia && 
                                        valorTurno.includes(base.lugar) && 
@@ -167,9 +166,8 @@
                             
                             let publicadoresArray = [];
                             if (match) {
-                                // Mapeo flexible para los nombres de los publicadores
-                                const p1 = match.publicador1 || match["Publicador 1"] || "";
-                                const p2 = match.publicador2 || match["Publicador 2"] || "";
+                                const p1 = match.publicador1 || "";
+                                const p2 = match.publicador2 || "";
                                 if (p1) publicadoresArray.push(p1);
                                 if (p2) publicadoresArray.push(p2);
                             }
@@ -185,7 +183,7 @@
                         setTurnos(turnosCombinados);
                         setLoading(false);
                     } catch (error) {
-                        console.error("Error cargando turnos:", error);
+                        console.error("Error procesando los turnos:", error);
                         setLoading(false);
                     }
                 }
