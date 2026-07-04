@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Turnos Predicación Pública</title>
+    <title>Panel de Predicación Pública</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -15,8 +15,6 @@
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -24,16 +22,10 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Enlace de Google Apps Script configurado
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE3HWIoO3XMe87I8oM7K-gZg0E0oGq7L8HkgZ0nZ_H1W3mPWomjT5Y0aN6Fqd-barZfV/exec";
-        
-        // Número de WhatsApp configurado para Chile
         const MI_WHATSAPP = "56935246020";
-
-        // Enlace directo a tu Google Form para asignaciones rápidas
         const LINK_FORMULARIO = "https://forms.gle/aksjd95gpLv5aFqY7";
 
-        // Estructura fija y completa con los 70 turnos semanales
         const estructuraTurnosBase = [
             // LUNES
             { dia: "Lunes", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
@@ -60,7 +52,7 @@
             { dia: "Martes", pueblo: "Los Sauces", lugar: "Consultorio Los Sauces", hora: "4:00 pm - 6:00 pm" },
             { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "8:00 am - 10:00 am" },
             { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "12:00 pm - 2:00 pm" },
-            { dia: "Martes", pueblo: "Los Sauces", language: "es", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Martes", pueblo: "Los Sauces", lugar: "Terminal Los Sauces", hora: "4:00 pm - 6:00 pm" },
             // MIÉRCOLES
             { dia: "Miércoles", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
             { dia: "Miércoles", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
@@ -88,7 +80,7 @@
             // VIERNES
             { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "8:00 am - 10:00 am" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "12:00 pm - 2:00 pm" },
-            { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", hora: "4:00 pm - 6:00 pm" },
+            { dia: "Viernes", pueblo: "Purén", lugar: "Plaza Purén", fontFamily: "sans-serif", hora: "4:00 pm - 6:00 pm" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "8:00 am - 10:00 am" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "10:00 am - 1:00 pm" },
             { dia: "Viernes", pueblo: "Purén", lugar: "Hospital Purén", hora: "2:30 pm - 4:30 pm" },
@@ -125,7 +117,6 @@
             "Los Sauces": ["Consultorio Los Sauces", "Feria Los Sauces", "Terminal Los Sauces"]
         };
 
-        // Generador de fechas en base al lunes de la semana actual
         function obtenerFechaDeDia(nombreDia) {
             const indicesDias = { "Lunes": 1, "Martes": 2, "Miércoles": 3, "Jueves": 4, "Viernes": 5, "Sábado": 6 };
             const objetivo = indicesDias[nombreDia];
@@ -133,7 +124,6 @@
 
             const hoy = new Date();
             const diaActualSemana = hoy.getDay(); 
-            
             const distanciaAlLunes = diaActualSemana === 0 ? -6 : 1 - diaActualSemana;
             
             const fechaResultado = new Date(hoy);
@@ -160,20 +150,28 @@
                             const response = await fetch(SCRIPT_URL);
                             respuestasForm = await response.json();
                         } catch (e) {
-                            console.log("Desplegando turnos base.");
+                            console.log("Error leyendo datos del script.");
                         }
                         
                         const turnosCombinados = estructuraTurnosBase.map((base, index) => {
-                            const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => 
-                                r.dia === base.dia && 
-                                r.turno.includes(base.lugar) && 
-                                r.turno.includes(base.hora)
-                            ) : null;
+                            // Mapeo flexible para leer los títulos reales de tu hoja
+                            const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => {
+                                // Busca en la propiedad exacta o en variaciones que contengan el texto
+                                const valorDia = r.dia || r["Selecciona el díaLunesMartesMiércolesJuevesViernesSábado"] || "";
+                                const valorTurno = r.turno || r["Selecciona tu turno"] || Object.values(r).find(v => typeof v === 'string' && v.includes(base.lugar)) || "";
+                                
+                                return valorDia === base.dia && 
+                                       valorTurno.includes(base.lugar) && 
+                                       valorTurno.includes(base.hora);
+                            }) : null;
                             
                             let publicadoresArray = [];
                             if (match) {
-                                if (match.publicador1) publicadoresArray.push(match.publicador1);
-                                if (match.publicador2) publicadoresArray.push(match.publicador2);
+                                // Mapeo flexible para los nombres de los publicadores
+                                const p1 = match.publicador1 || match["Publicador 1"] || "";
+                                const p2 = match.publicador2 || match["Publicador 2"] || "";
+                                if (p1) publicadoresArray.push(p1);
+                                if (p2) publicadoresArray.push(p2);
                             }
 
                             return {
@@ -202,7 +200,7 @@
                 return (
                     <div class="max-w-md mx-auto bg-gray-50 min-h-screen flex flex-col justify-center items-center">
                         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-3"></div>
-                        <p class="text-sm font-medium text-gray-500">Cargando turnos semanales...</p>
+                        <p class="text-sm font-medium text-gray-500">Sincronizando con Google Sheets...</p>
                     </div>
                 );
             }
@@ -214,7 +212,6 @@
             return (
                 <div class="max-w-md mx-auto bg-gray-50 min-h-screen pb-24 shadow-xl relative flex flex-col justify-between overflow-x-hidden">
                     
-                    {/* ENCABEZADO */}
                     <header class="bg-slate-900 text-white p-4 sticky top-0 z-40 shadow-md">
                         <div class="flex justify-between items-center">
                             <div>
@@ -227,10 +224,7 @@
                         </div>
                     </header>
 
-                    {/* CUERPO PRINCIPAL */}
                     <main class="p-4 flex-grow">
-                        
-                        {/* PESTAÑA: TURNOS */}
                         {activeTab === "turnos" && (
                             <div class="space-y-4">
                                 <div class="grid grid-cols-3 gap-2 bg-white p-3 rounded-xl shadow-sm border border-gray-100 text-center">
@@ -249,7 +243,7 @@
                                 </div>
 
                                 <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl shadow-sm border border-gray-100">
-                                    <span class="text-sm font-medium text-gray-700">Mostrar solo turnos disponibles</span>
+                                    <span class="text-sm font-medium text-gray-700">Mostrar solo huecos libres</span>
                                     <button 
                                         onClick={() => setVerSoloVacios(!verSoloVacios)}
                                         class={`w-12 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${verSoloVacios ? 'bg-rose-500 justify-end' : 'bg-gray-300 justify-start'}`}
@@ -282,9 +276,8 @@
                                             const esVacio = t.publicadores.length === 0;
                                             const cfg = configPueblos[t.pueblo] || configPueblos["Purén"];
                                             
-                                            // Texto dinámico con salto de línea y enlace directo al Google Form al final
                                             const textoMensaje = encodeURIComponent(
-                                                `Hola, a mí y a .... nos gustaría solicitar el turno del ${t.fechaTexto} en ${t.lugar} de ${t.hora}.\n\n` +
+                                                `Hola, me gustaría solicitar el turno del ${t.fechaTexto} en ${t.lugar} de ${t.hora}.\n\n` +
                                                 `-------------------------\n` +
                                                 `🔗 Link de Asignación:\n${LINK_FORMULARIO}`
                                             );
@@ -339,7 +332,6 @@
                             </div>
                         )}
 
-                        {/* PESTAÑA: MI TURNO */}
                         {activeTab === "mi-turno" && (
                             <div class="space-y-4">
                                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
@@ -400,7 +392,6 @@
                             </div>
                         )}
 
-                        {/* PESTAÑA: LUGARES */}
                         {activeTab === "lugares" && (
                             <div class="space-y-4">
                                 <div class="bg-white p-2.5 rounded-xl shadow-sm border border-gray-100 space-y-2">
@@ -492,7 +483,7 @@
                                                                                 <span class="font-bold text-slate-800">{t.fechaTexto} ({t.hora})</span>
                                                                                 <div class="text-gray-500">
                                                                                     {esVacio ? (
-                                                                                        <span class="text-rose-600 font-bold">🔴 Disponible</span>
+                                                                                        <span class="text-rose-600 font-bold">🔴 Falta Asignar</span>
                                                                                     ) : (
                                                                                         <span>👥 {t.publicadores.join(" y ")}</span>
                                                                                     )}
@@ -509,36 +500,22 @@
                                 </div>
                             </div>
                         )}
-
                     </main>
 
-                    {/* NAVEGACIÓN INFERIOR */}
                     <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 h-16 flex justify-around items-center z-50 px-2 shadow-2xl">
-                        <button 
-                            onClick={() => setActiveTab("turnos")}
-                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "turnos" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}
-                        >
+                        <button onClick={() => setActiveTab("turnos")} class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "turnos" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             <span class="text-[10px]">Turnos</span>
                         </button>
-
-                        <button 
-                            onClick={() => setActiveTab("mi-turno")}
-                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "mi-turno" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}
-                        >
+                        <button onClick={() => setActiveTab("mi-turno")} class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "mi-turno" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             <span class="text-[10px]">Mi Turno</span>
                         </button>
-
-                        <button 
-                            onClick={() => setActiveTab("lugares")}
-                            class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "lugares" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}
-                        >
+                        <button onClick={() => setActiveTab("lugares")} class={`flex flex-col items-center justify-center w-full h-full space-y-0.5 ${activeTab === "lugares" ? 'text-slate-900 font-bold' : 'text-gray-400'}`}>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             <span class="text-[10px]">Lugares</span>
                         </button>
                     </nav>
-
                 </div>
             );
         }
