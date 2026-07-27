@@ -147,7 +147,11 @@
                     try {
                         let respuestasForm = [];
                         try {
-                            const response = await fetch(SCRIPT_URL);
+                            // Se agrega timestamp & cache: no-cache para romper la memoria temporal del navegador
+                            const timestamp = new Date().getTime();
+                            const urlConAntiCache = `${SCRIPT_URL}?_=${timestamp}`;
+                            
+                            const response = await fetch(urlConAntiCache, { cache: "no-cache" });
                             respuestasForm = await response.json();
                         } catch (e) {
                             console.log("Error de red con el script remoto.");
@@ -156,7 +160,6 @@
                         const turnosCombinados = estructuraTurnosBase.map((base, index) => {
                             const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => {
                                 const valorDia = r.dia || "";
-                                // Buscar el turno tanto en la propiedad genérica "turno" como en la columna con el nombre del día
                                 const valorTurno = r.turno || r[base.dia] || "";
                                 
                                 return valorDia === base.dia && 
