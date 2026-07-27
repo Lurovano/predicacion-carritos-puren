@@ -22,8 +22,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // URL nueva del script vinculada correctamente
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybTN_rsLt2Df79aEv5rAsjA4Y7oIohmmmo16MjPG0D-M2X9hLIYW5gjD48gr4qOmYk/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGRkNcVZkYfoK--4YaPLkT1FXpsTvkfa6wiK6y7UT8rJhkNHy-c5D3-s7tKDy24TF8/exec";
         const MI_WHATSAPP = "56935246020";
         const LINK_FORMULARIO = "https://forms.gle/aksjd95gpLv5aFqY7";
 
@@ -109,8 +108,8 @@
         const diasSemana = ["Todos", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         
         const configPueblos = {
-            "Purén": { bg: "bg-indigo-50", border: "border-indigo-600", text: "text-indigo-700", badge: "bg-indigo-100 text-indigo-800", rawColor: "indigo" },
-            "Los Sauces": { bg: "bg-amber-50", border: "border-amber-500", text: "text-amber-700", badge: "bg-amber-100 text-amber-800", rawColor: "amber" }
+            "Purén": { bg: "bg-indigo-50", border: "border-indigo-600", text: "text-indigo-700", badge: "bg-indigo-100 text-indigo-800" },
+            "Los Sauces": { bg: "bg-amber-50", border: "border-amber-500", text: "text-amber-700", badge: "bg-amber-100 text-amber-800" }
         };
 
         const lugaresPorPueblo = {
@@ -157,7 +156,8 @@
                         const turnosCombinados = estructuraTurnosBase.map((base, index) => {
                             const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => {
                                 const valorDia = r.dia || "";
-                                const valorTurno = r.turno || "";
+                                // Buscar el turno tanto en la propiedad genérica "turno" como en la columna con el nombre del día
+                                const valorTurno = r.turno || r[base.dia] || "";
                                 
                                 return valorDia === base.dia && 
                                        valorTurno.includes(base.lugar) && 
