@@ -22,7 +22,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // URL actualizada de Apps Script
+        // URL de Apps Script
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxod-C1ppeB3mHu2Z03OBJaHF19BUlgn_za-r28LLUITvrHJ-P9Z9pFOHnmPaQeRo6v/exec";
         const MI_WHATSAPP = "56935246020";
         const LINK_FORMULARIO = "https://forms.gle/aksjd95gpLv5aFqY7";
@@ -151,22 +151,23 @@
             const mapearTurnos = (respuestasForm) => {
                 return estructuraTurnosBase.map((base, index) => {
                     const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => {
-                        const valorDia = normalizarTexto(r.dia || r.día || "");
+                        const diaSeleccionado = normalizarTexto(r["selecciona el dia"] || r["selecciona el día"] || r.dia || "");
                         const baseDia = normalizarTexto(base.dia);
                         
-                        const valorTurno = normalizarTexto(r.turno || r[base.dia] || "");
+                        if (diaSeleccionado !== baseDia) return false;
+
+                        // Buscar el valor en la columna del día correspondiente (ej: r.lunes, r.martes, etc.)
+                        const valorColumnaDia = normalizarTexto(r[baseDia] || r[base.dia] || "");
                         const baseLugar = normalizarTexto(base.lugar);
                         const baseHora = normalizarTexto(base.hora);
-                        
-                        return valorDia === baseDia && 
-                               valorTurno.includes(baseLugar) && 
-                               valorTurno.includes(baseHora);
+
+                        return valorColumnaDia.includes(baseLugar) && valorColumnaDia.includes(baseHora);
                     }) : null;
                     
                     let publicadoresArray = [];
                     if (match) {
-                        const p1 = match.publicador1 || match["nombre de publicador 1"] || match["publicador 1"] || "";
-                        const p2 = match.publicador2 || match["nombre de publicador 2"] || match["publicador 2"] || "";
+                        const p1 = match["publicador 1"] || match["publicador1"] || match["nombre de publicador 1"] || "";
+                        const p2 = match["publicador 2"] || match["publicador2"] || match["nombre de publicador 2"] || "";
                         if (p1) publicadoresArray.push(p1);
                         if (p2) publicadoresArray.push(p2);
                     }
@@ -361,7 +362,7 @@
                                     </label>
                                     <input 
                                         type="text"
-                                        placeholder="Ej. Rodrigo Valdés"
+                                        placeholder="Ej. Kary, Tom, Batman"
                                         value={busquedaNombre}
                                         onChange={(e) => setBusquedaNombre(e.target.value)}
                                         class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm"
