@@ -22,7 +22,8 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGRkNcVZkYfoK--4YaPLkT1FXpsTvkfa6wiK6y7UT8rJhkNHy-c5D3-s7tKDy24TF8/exec";
+        // URL actualizada de Apps Script
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxod-C1ppeB3mHu2Z03OBJaHF19BUlgn_za-r28LLUITvrHJ-P9Z9pFOHnmPaQeRo6v/exec";
         const MI_WHATSAPP = "56935246020";
         const LINK_FORMULARIO = "https://forms.gle/aksjd95gpLv5aFqY7";
 
@@ -142,51 +143,70 @@
             const [filtroPuebloLugares, setFiltroPuebloLugares] = React.useState("Todos");
             const [filtroEspecificoLugar, setFiltroEspecificoLugar] = React.useState("Todos");
 
+            const normalizarTexto = (str) => {
+                if (!str) return "";
+                return str.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            };
+
+            const mapearTurnos = (respuestasForm) => {
+                return estructuraTurnosBase.map((base, index) => {
+                    const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => {
+                        const valorDia = normalizarTexto(r.dia || r.día || "");
+                        const baseDia = normalizarTexto(base.dia);
+                        
+                        const valorTurno = normalizarTexto(r.turno || r[base.dia] || "");
+                        const baseLugar = normalizarTexto(base.lugar);
+                        const baseHora = normalizarTexto(base.hora);
+                        
+                        return valorDia === baseDia && 
+                               valorTurno.includes(baseLugar) && 
+                               valorTurno.includes(baseHora);
+                    }) : null;
+                    
+                    let publicadoresArray = [];
+                    if (match) {
+                        const p1 = match.publicador1 || match["nombre de publicador 1"] || match["publicador 1"] || "";
+                        const p2 = match.publicador2 || match["nombre de publicador 2"] || match["publicador 2"] || "";
+                        if (p1) publicadoresArray.push(p1);
+                        if (p2) publicadoresArray.push(p2);
+                    }
+
+                    return {
+                        id: index + 1,
+                        ...base,
+                        fechaTexto: obtenerFechaDeDia(base.dia),
+                        publicadores: publicadoresArray
+                    };
+                });
+            };
+
             React.useEffect(() => {
                 async function fetchTurnos() {
+                    const turnosIniciales = mapearTurnos([]);
+                    setTurnos(turnosIniciales);
+
                     try {
-                        let respuestasForm = [];
-                        try {
-                            // Se agrega timestamp & cache: no-cache para romper la memoria temporal del navegador
-                            const timestamp = new Date().getTime();
-                            const urlConAntiCache = `${SCRIPT_URL}?_=${timestamp}`;
-                            
-                            const response = await fetch(urlConAntiCache, { cache: "no-cache" });
-                            respuestasForm = await response.json();
-                        } catch (e) {
-                            console.log("Error de red con el script remoto.");
-                        }
-                        
-                        const turnosCombinados = estructuraTurnosBase.map((base, index) => {
-                            const match = Array.isArray(respuestasForm) ? respuestasForm.find(r => {
-                                const valorDia = r.dia || "";
-                                const valorTurno = r.turno || r[base.dia] || "";
-                                
-                                return valorDia === base.dia && 
-                                       valorTurno.includes(base.lugar) && 
-                                       valorTurno.includes(base.hora);
-                            }) : null;
-                            
-                            let publicadoresArray = [];
-                            if (match) {
-                                const p1 = match.publicador1 || "";
-                                const p2 = match.publicador2 || "";
-                                if (p1) publicadoresArray.push(p1);
-                                if (p2) publicadoresArray.push(p2);
+                        const timestamp = new Date().getTime();
+                        const response = await fetch(`${SCRIPT_URL}?_=${timestamp}`);
+                        const respuestasForm = await response.json();
+
+                        if (Array.isArray(respuestasForm) && respuestasForm.length > 0) {
+                            const turnosActualizados = mapearTurnos(respuestasForm);
+                            setTurnos(turnosActualizados);
+                            localStorage.setItem("turnos_cache", JSON.stringify(respuestasForm));
+                        } else {
+                            const cacheLocal = localStorage.getItem("turnos_cache");
+                            if (cacheLocal) {
+                                setTurnos(mapearTurnos(JSON.parse(cacheLocal)));
                             }
-
-                            return {
-                                id: index + 1,
-                                ...base,
-                                fechaTexto: obtenerFechaDeDia(base.dia),
-                                publicadores: publicadoresArray
-                            };
-                        });
-
-                        setTurnos(turnosCombinados);
-                        setLoading(false);
-                    } catch (error) {
-                        console.error("Error procesando los turnos:", error);
+                        }
+                    } catch (e) {
+                        console.log("Error de conexión, cargando respaldo...");
+                        const cacheLocal = localStorage.getItem("turnos_cache");
+                        if (cacheLocal) {
+                            setTurnos(mapearTurnos(JSON.parse(cacheLocal)));
+                        }
+                    } finally {
                         setLoading(false);
                     }
                 }
@@ -201,7 +221,7 @@
                 return (
                     <div class="max-w-md mx-auto bg-gray-50 min-h-screen flex flex-col justify-center items-center">
                         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-3"></div>
-                        <p class="text-sm font-medium text-gray-500">Sincronizando con Google Sheets...</p>
+                        <p class="text-sm font-medium text-gray-500">Cargando turnos...</p>
                     </div>
                 );
             }
